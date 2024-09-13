@@ -1,8 +1,10 @@
 import type { SummaryResponse } from '../types/summaryResponse'
 
-export async function getSummary(): Promise<SummaryResponse> {
-  const response = await fetch('http://localhost:3333/summary')
-  const data = await response.json()
+import { httpClient } from './libs/httpClient'
 
-  return data.summary
+export async function getSummary(): Promise<SummaryResponse> {
+  const response = await httpClient.get('/summary')
+  const data = response.data.summary
+
+  return data
 }

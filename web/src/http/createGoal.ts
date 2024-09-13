@@ -1,14 +1,12 @@
 import type { CreateGoalRequest } from '../types/createGoalRequest'
+import { httpClient } from './libs/httpClient'
 
 export async function createGoal({
   title,
   desiredWeeklyFrequency,
 }: CreateGoalRequest) {
-  await fetch('http://localhost:3333/goals', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ title, desiredWeeklyFrequency }),
+  await httpClient.post('/goals', {
+    title,
+    desiredWeeklyFrequency,
   })
 }

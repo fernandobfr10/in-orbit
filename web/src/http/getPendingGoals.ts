@@ -1,8 +1,10 @@
 import type { pendingGoalsResponse } from '../types/pendingGoalsResponse'
 
-export async function getPendingGoals(): Promise<pendingGoalsResponse> {
-  const response = await fetch('http://localhost:3333/pending-goals')
-  const data = await response.json()
+import { httpClient } from './libs/httpClient'
 
-  return data.pendingGoals
+export async function getPendingGoals(): Promise<pendingGoalsResponse> {
+  const response = await httpClient.get('pending-goals')
+  const data = response.data.pendingGoals
+
+  return data
 }

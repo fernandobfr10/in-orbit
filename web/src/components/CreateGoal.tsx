@@ -1,5 +1,10 @@
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { X } from 'lucide-react'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
 
+import { createGoal } from '../http/createGoal'
 import { Button } from './ui/Button'
 import {
   DialogClose,
@@ -15,7 +20,32 @@ import {
   RadioGroupItem,
 } from './ui/RadioGroup'
 
+const createGoalFormSchema = z.object({
+  title: z.string().min(1, 'Informe a atividade que deseja realizar.'),
+  desiredWeeklyFrequency: z.coerce.number().int().min(1).max(7),
+})
+
+type CreateGoalForm = z.infer<typeof createGoalFormSchema>
+
 export function CreateGoal() {
+  const queryClient = useQueryClient()
+  const { handleSubmit, register, control, formState, reset } =
+    useForm<CreateGoalForm>({
+      resolver: zodResolver(createGoalFormSchema),
+    })
+
+  async function handleCreateGoal(data: CreateGoalForm) {
+    await createGoal({
+      title: data.title,
+      desiredWeeklyFrequency: data.desiredWeeklyFrequency,
+    })
+
+    queryClient.invalidateQueries({ queryKey: ['summary'] })
+    queryClient.invalidateQueries({ queryKey: ['pending-goals'] })
+
+    reset()
+  }
+
   return (
     <DialogContent>
       <div className="flex flex-col gap-6 h-full">
@@ -33,7 +63,10 @@ export function CreateGoal() {
           </DialogDescription>
         </div>
 
-        <form className="flex-1 flex flex-col justify-between">
+        <form
+          className="flex-1 flex flex-col justify-between"
+          onSubmit={handleSubmit(handleCreateGoal)}
+        >
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
               <Label htmlFor="title">Qual a atividade?</Label>
@@ -41,33 +74,79 @@ export function CreateGoal() {
                 placeholder="Praticar exercícios, meditar, etc..."
                 autoFocus
                 id="title"
+                {...register('title')}
               />
+              {formState.errors.title && (
+                <p className="text-sm text-red-400">
+                  {formState.errors.title.message}
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="title">Quantas vezes na semana?</Label>
-              <RadioGroup>
-                <RadioGroupItem value="1">
-                  <RadioGroupIndicator />
-                  <span className="text-zinc-300 text-sm font-medium leading-none">
-                    1x na semana
-                  </span>
-                  <span className="text-lg leading-none">🥱</span>
-                </RadioGroupItem>
-                <RadioGroupItem value="2">
-                  <RadioGroupIndicator />
-                  <span className="text-zinc-300 text-sm font-medium leading-none">
-                    2x na semana
-                  </span>
-                  <span className="text-lg leading-none">🙂</span>
-                </RadioGroupItem>
-                <RadioGroupItem value="3">
-                  <RadioGroupIndicator />
-                  <span className="text-zinc-300 text-sm font-medium leading-none">
-                    3x na semana
-                  </span>
-                  <span className="text-lg leading-none">😎</span>
-                </RadioGroupItem>
-              </RadioGroup>
+              <Controller
+                control={control}
+                name="desiredWeeklyFrequency"
+                defaultValue={1}
+                render={({ field }) => {
+                  return (
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={String(field.value)}
+                    >
+                      <RadioGroupItem value="1">
+                        <RadioGroupIndicator />
+                        <span className="text-zinc-300 text-sm font-medium leading-none">
+                          1x na semana
+                        </span>
+                        <span className="text-lg leading-none">🥱</span>
+                      </RadioGroupItem>
+                      <RadioGroupItem value="2">
+                        <RadioGroupIndicator />
+                        <span className="text-zinc-300 text-sm font-medium leading-none">
+                          2x na semana
+                        </span>
+                        <span className="text-lg leading-none">🙂</span>
+                      </RadioGroupItem>
+                      <RadioGroupItem value="3">
+                        <RadioGroupIndicator />
+                        <span className="text-zinc-300 text-sm font-medium leading-none">
+                          3x na semana
+                        </span>
+                        <span className="text-lg leading-none">😎</span>
+                      </RadioGroupItem>
+                      <RadioGroupItem value="4">
+                        <RadioGroupIndicator />
+                        <span className="text-zinc-300 text-sm font-medium leading-none">
+                          4x na semana
+                        </span>
+                        <span className="text-lg leading-none">😜</span>
+                      </RadioGroupItem>
+                      <RadioGroupItem value="5">
+                        <RadioGroupIndicator />
+                        <span className="text-zinc-300 text-sm font-medium leading-none">
+                          5x na semana
+                        </span>
+                        <span className="text-lg leading-none">🤨</span>
+                      </RadioGroupItem>
+                      <RadioGroupItem value="6">
+                        <RadioGroupIndicator />
+                        <span className="text-zinc-300 text-sm font-medium leading-none">
+                          6x na semana
+                        </span>
+                        <span className="text-lg leading-none">🤯</span>
+                      </RadioGroupItem>
+                      <RadioGroupItem value="7">
+                        <RadioGroupIndicator />
+                        <span className="text-zinc-300 text-sm font-medium leading-none">
+                          Todos os dias da semana
+                        </span>
+                        <span className="text-lg leading-none">🔥</span>
+                      </RadioGroupItem>
+                    </RadioGroup>
+                  )
+                }}
+              />
             </div>
           </div>
 
